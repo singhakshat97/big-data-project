@@ -1,0 +1,43 @@
+INITIAL DATA LOADING:
+
+library(knitr)
+library(caret)
+library(party)
+library(randomForest)
+train_dat <- read.csv('~/r project/train.csv)
+train_dat$Survived <- factor(train_dat$Survived, levels=c(0,1), labels=c('DIED', 'SURVIVED'))
+
+set.seed(42)
+train_idx <- createDataPartition(train_dat$Survived, p=0.75, list=F, times=1)
+
+model_dat <- train_dat[train_idx,]
+val_dat <- train_dat[-train_idx,]
+
+
+
+
+INITIAL SOLUTION EXPLAINATION:
+
+par(mfrow=c(1,1))
+simple_survival_ctree <- ctree(Survived ~ Age + Sex + Pclass, data=model_dat, 
+                               controls=ctree_control(testtype="Bonferroni"))
+plot(simple_survival_ctree)
+val_dat$ctree_preds <- predict(simple_survival_ctree, newdata=val_dat, type='response')
+
+
+
+
+INITIAL SOLUTION ANALYSIS:
+
+confusionMatrix(val_dat$ctree_preds, val_dat$Survived, positive="SURVIVED")
+
+
+
+REVISED SOLUTION AND ANAYLSIS:
+
+
+better_survival_ctree <- ctree(Survived ~ Age + Sex + Pclass + Fare + Parch + SibSp, data=model_dat, 
+                               controls=ctree_control(testtype="Bonferroni"))
+plot(better_survival_ctree)
+val_dat$v2_ctree_preds <- predict(better_survival_ctree, newdata=val_dat, type='response')
+confusionMatrix(val_dat$v2_ctree_preds, val_dat$Survived, positive="SURVIVED")
